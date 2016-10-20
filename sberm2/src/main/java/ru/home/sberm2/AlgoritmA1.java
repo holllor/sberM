@@ -57,7 +57,7 @@ public class AlgoritmA1 {
                     for (SrednNeopr srednNeop : listSrednNeopr) { // перебор по таблице средний неопределенный(все ключ. значения)
                         if (srednNeop.getMccCode() == mcc_codeCust) { // выбираем конктреную строку из выборки
 
-                            float srNeopKoef = (float) (srednNeop.getSredn().floatValue() ); // допущение 1 ( / 1.261)муж больше
+                            float srNeopKoef = (float) (srednNeop.getSredn().floatValue()/ 1.261 ); // допущение 1 ( / 1.261)муж больше
                             // System.out.println("kod = "+mcc_codeCust+ " value = "+srNeopKoef+" ? "+srednCust * srednNeop.getKoef());
                             if (srNeopKoef <= srednCust * srednNeop.getKoef()) {// если среднее меньше то М
 
