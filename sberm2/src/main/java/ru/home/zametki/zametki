@@ -14,10 +14,9 @@
 ------------------- 
 SELECT  t.mcc_code, count(t.mcc_code), round(sum(t.amount)/count(t.mcc_code)) as sredn, sum(t.amount), 
 (select mcc_description from tr_mcc_codes where mcc_code = t.mcc_code )
-      
   FROM transactions t
 left join customers_gender_train g on  t.customer_id= g.customer_id
-  where g.gender is null /* and t.customer_id = 27979606*/ and t.amount <0
+  where g.gender is null  and t.customer_id = ? and t.amount <0
   and t.tr_type in (1010,1110,1030,1110,1200,2010,2011,2330,2370,2371,4010,4071,4110,6110,7010,
   7011,7030,7031,7070,7071)
   group by t.mcc_code 
