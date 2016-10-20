@@ -34,42 +34,54 @@ public class AlgoritmA1 {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("sber1");
         SpisNotGenderCustomJpaController jpa = new SpisNotGenderCustomJpaController(emf);
         listSpisNotGender = jpa.findSpisNotGenderCustomEntities();
-        listSrednNeopr = jpa.findSpisSrednNeoprEntities(); // выбор списка всех неопределенных 
-        Integer id = listSpisNotGender.get(0).getCustomerId();
-        System.out.println(id);
-        List<List<String>> listTest = jpa.selectSrednCustomer(id);// выбираем по ид ключевые коды пользователя
-        float genderCustomer = 0;
-        if (listTest == null) {// если нуль то вероятность = рандому, прсваевыем случайное значение
-            Integer veroyatn = (int) (Math.random() + 0.5);// произвольное выпадение 0 или 1
-            genderCustomer = veroyatn.floatValue();
-        } else {
-            List<Integer> veroyatAll = new ArrayList<>();
-            for (List<String> list : listTest) { // перебираем ключевые коды пользователя
-                System.out.println(list.get(0) + " " + list.get(1));
-                int mcc_codeCust = Integer.valueOf(list.get(0));
-                int srednCust = Integer.valueOf(list.get(1));
+        for (SpisNotGenderCustom spisNotGenderCustom : listSpisNotGender) {// перебираем всех неопределенных пользователей
+          
+            listSrednNeopr = jpa.findSpisSrednNeoprEntities(); // выбор списка всех средних, коэф. и их мсс кодов  
+            Integer id = spisNotGenderCustom.getCustomerId(); // получение ид пользоватлея
+           // System.out.println(id);
+            List<List<String>> listTest = jpa.selectSrednCustomer(id);// выбираем по ид ключевые коды пользователя
+            float genderCustomer = 0;// пол пользоватлея по умолчанию Ж
+            // Проверка на случай если у пользователя нет ключевых кодов (они выбирались по наиболее сильным отличиям М и Ж)
+            
+            if (listTest == null || listTest.isEmpty() ) {// если нуль то вероятность = рандому, присваеваем случайное значение
+                Integer veroyatn = (int) (Math.random() + 0.5);// произвольное выпадение 0 или 1
+                genderCustomer = veroyatn.floatValue();
+            } else {// иначе
+                List<Integer> veroyatAll = new ArrayList<>(); // список ключевых пользователя, для каждого из них вероятность разная (итог по среднему значению)
+                for (List<String> list : listTest) { // перебираем ключевые коды пользователя
+                   // System.out.println(list.get(0) + " " + list.get(1));
+                    int mcc_codeCust = Integer.valueOf(list.get(0));
+                    int srednCust = Integer.valueOf(list.get(1));
 
-                for (SrednNeopr srednNeop : listSrednNeopr) { // перебор по таблице средний неопределенный
-                    if (srednNeop.getMccCode() == mcc_codeCust) { // выбираем конктреную строку из выборки
-                        float srNeopKoef = (float) (srednNeop.getSredn().floatValue() / 1.261);
-                        if (srNeopKoef <= srednCust * srednNeop.getKoef()) {
-                            Integer veroyat1 = 1;
-                            veroyatAll.add(veroyat1);
-                        } else {
-                            Integer veroyat2 = 0;
-                            veroyatAll.add(veroyat2);
+                    for (SrednNeopr srednNeop : listSrednNeopr) { // перебор по таблице средний неопределенный(все ключ. значения)
+                        if (srednNeop.getMccCode() == mcc_codeCust) { // выбираем конктреную строку из выборки
+                            
+                            float srNeopKoef = (float) (srednNeop.getSredn().floatValue() / 1.261); // допущение 1 муж больше
+                            System.out.println("kod = "+mcc_codeCust+ " value = "+srNeopKoef+" ? "+srednCust * srednNeop.getKoef());
+                            if (srNeopKoef <= srednCust * srednNeop.getKoef()) {// если среднее меньше то М
+                                Integer veroyat1 = 1;
+                                veroyatAll.add(veroyat1);
+                            } 
+                           if (srNeopKoef > srednCust * srednNeop.getKoef())  {// если нет то Ж
+                                Integer veroyat2 = 0;
+                                System.out.println("Ж");
+                                veroyatAll.add(veroyat2);
+                            }
                         }
                     }
                 }
+                int itog = 0;
+                for (int i = 0; i < veroyatAll.size(); i++) {
+                    itog += veroyatAll.get(0);
+                }
+               // System.out.println(id+" "+veroyatAll.size());
+              // System.out.println(itog+" "+veroyatAll.size());
+                float verItog = itog / veroyatAll.size();
+                
+                genderCustomer = verItog;
             }
-            int itog = 0;
-            for (int i = 0; i < veroyatAll.size(); i++) {
-                itog += veroyatAll.get(0);
-            }
-
-            float verItog = itog / veroyatAll.size();
-            genderCustomer = verItog;
-        }
-
+            System.out.println(id +" "+genderCustomer);
+        } 
+        
     }
 }
